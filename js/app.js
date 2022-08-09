@@ -3868,35 +3868,233 @@
             })
         });
     }
-    function initSliders() {
-        if (document.querySelector(".swiper")) new core(".main-swiper", {
-            modules: [ Navigation, Manipulation, Pagination, EffectFade ],
-            observer: true,
-            observeParents: true,
-            slidesPerView: 1,
-            spaceBetween: 0,
-            autoHeight: true,
-            speed: 800,
-            effect: "fade",
-            autoplay: {
-                delay: 3e3,
-                disableOnInteraction: false
-            },
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true
-            },
-            navigation: {
-                prevEl: ".swiper-button-prev",
-                nextEl: ".swiper-button-next"
-            },
-            on: {}
+    function create_shadow_createShadow(params, $slideEl, side) {
+        const shadowClass = `swiper-slide-shadow${side ? `-${side}` : ""}`;
+        const $shadowContainer = params.transformEl ? $slideEl.find(params.transformEl) : $slideEl;
+        let $shadowEl = $shadowContainer.children(`.${shadowClass}`);
+        if (!$shadowEl.length) {
+            $shadowEl = dom(`<div class="swiper-slide-shadow${side ? `-${side}` : ""}"></div>`);
+            $shadowContainer.append($shadowEl);
+        }
+        return $shadowEl;
+    }
+    function EffectCoverflow(_ref) {
+        let {swiper, extendParams, on} = _ref;
+        extendParams({
+            coverflowEffect: {
+                rotate: 50,
+                stretch: 0,
+                depth: 100,
+                scale: 1,
+                modifier: 1,
+                slideShadows: true,
+                transformEl: null
+            }
         });
+        const setTranslate = () => {
+            const {width: swiperWidth, height: swiperHeight, slides, slidesSizesGrid} = swiper;
+            const params = swiper.params.coverflowEffect;
+            const isHorizontal = swiper.isHorizontal();
+            const transform = swiper.translate;
+            const center = isHorizontal ? -transform + swiperWidth / 2 : -transform + swiperHeight / 2;
+            const rotate = isHorizontal ? params.rotate : -params.rotate;
+            const translate = params.depth;
+            for (let i = 0, length = slides.length; i < length; i += 1) {
+                const $slideEl = slides.eq(i);
+                const slideSize = slidesSizesGrid[i];
+                const slideOffset = $slideEl[0].swiperSlideOffset;
+                const centerOffset = (center - slideOffset - slideSize / 2) / slideSize;
+                const offsetMultiplier = "function" === typeof params.modifier ? params.modifier(centerOffset) : centerOffset * params.modifier;
+                let rotateY = isHorizontal ? rotate * offsetMultiplier : 0;
+                let rotateX = isHorizontal ? 0 : rotate * offsetMultiplier;
+                let translateZ = -translate * Math.abs(offsetMultiplier);
+                let stretch = params.stretch;
+                if ("string" === typeof stretch && -1 !== stretch.indexOf("%")) stretch = parseFloat(params.stretch) / 100 * slideSize;
+                let translateY = isHorizontal ? 0 : stretch * offsetMultiplier;
+                let translateX = isHorizontal ? stretch * offsetMultiplier : 0;
+                let scale = 1 - (1 - params.scale) * Math.abs(offsetMultiplier);
+                if (Math.abs(translateX) < .001) translateX = 0;
+                if (Math.abs(translateY) < .001) translateY = 0;
+                if (Math.abs(translateZ) < .001) translateZ = 0;
+                if (Math.abs(rotateY) < .001) rotateY = 0;
+                if (Math.abs(rotateX) < .001) rotateX = 0;
+                if (Math.abs(scale) < .001) scale = 0;
+                const slideTransform = `translate3d(${translateX}px,${translateY}px,${translateZ}px)  rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+                const $targetEl = effect_target_effectTarget(params, $slideEl);
+                $targetEl.transform(slideTransform);
+                $slideEl[0].style.zIndex = -Math.abs(Math.round(offsetMultiplier)) + 1;
+                if (params.slideShadows) {
+                    let $shadowBeforeEl = isHorizontal ? $slideEl.find(".swiper-slide-shadow-left") : $slideEl.find(".swiper-slide-shadow-top");
+                    let $shadowAfterEl = isHorizontal ? $slideEl.find(".swiper-slide-shadow-right") : $slideEl.find(".swiper-slide-shadow-bottom");
+                    if (0 === $shadowBeforeEl.length) $shadowBeforeEl = create_shadow_createShadow(params, $slideEl, isHorizontal ? "left" : "top");
+                    if (0 === $shadowAfterEl.length) $shadowAfterEl = create_shadow_createShadow(params, $slideEl, isHorizontal ? "right" : "bottom");
+                    if ($shadowBeforeEl.length) $shadowBeforeEl[0].style.opacity = offsetMultiplier > 0 ? offsetMultiplier : 0;
+                    if ($shadowAfterEl.length) $shadowAfterEl[0].style.opacity = -offsetMultiplier > 0 ? -offsetMultiplier : 0;
+                }
+            }
+        };
+        const setTransition = duration => {
+            const {transformEl} = swiper.params.coverflowEffect;
+            const $transitionElements = transformEl ? swiper.slides.find(transformEl) : swiper.slides;
+            $transitionElements.transition(duration).find(".swiper-slide-shadow-top, .swiper-slide-shadow-right, .swiper-slide-shadow-bottom, .swiper-slide-shadow-left").transition(duration);
+        };
+        effect_init_effectInit({
+            effect: "coverflow",
+            swiper,
+            on,
+            setTranslate,
+            setTransition,
+            perspective: () => true,
+            overwriteParams: () => ({
+                watchSlidesProgress: true
+            })
+        });
+    }
+    function initSliders() {
+        if (document.querySelector(".swiper")) {
+            new core(".main-swiper", {
+                modules: [ Navigation, Manipulation, Pagination, EffectFade ],
+                observer: true,
+                observeParents: true,
+                slidesPerView: 1,
+                spaceBetween: 0,
+                autoHeight: true,
+                speed: 800,
+                simulateTouch: false,
+                effect: "fade",
+                autoplay: {
+                    delay: 3e3,
+                    disableOnInteraction: false
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true
+                },
+                navigation: {
+                    prevEl: ".swiper-button-prev",
+                    nextEl: ".swiper-button-next"
+                },
+                on: {}
+            });
+            new core(".our-objects-swiper", {
+                modules: [ Navigation, Manipulation, Pagination, EffectCoverflow ],
+                observer: true,
+                observeParents: true,
+                slidesPerView: 3,
+                spaceBetween: 20,
+                autoHeight: true,
+                speed: 1e3,
+                loop: true,
+                effect: "coverflow",
+                coverflowEffect: {
+                    rotate: 20,
+                    stretch: 70,
+                    slideShadows: true
+                },
+                nested: true,
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true
+                },
+                navigation: {
+                    prevEl: ".swiper-button-prev",
+                    nextEl: ".swiper-button-next"
+                },
+                breakpoints: {
+                    320: {
+                        slidesPerView: 3,
+                        spaceBetween: 0,
+                        autoHeight: true,
+                        effect: "coverflow",
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: 20,
+                            slideShadows: true
+                        }
+                    },
+                    420: {
+                        slidesPerView: 3,
+                        spaceBetween: 0
+                    },
+                    768: {
+                        slidesPerView: 3,
+                        spaceBetween: 0
+                    },
+                    991: {
+                        slidesPerView: 3,
+                        spaceBetween: 0,
+                        effect: "coverflow",
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: 70,
+                            slideShadows: false
+                        }
+                    },
+                    1400: {
+                        slidesPerView: 3,
+                        spaceBetween: 0,
+                        effect: "coverflow",
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: 120,
+                            slideShadows: false
+                        }
+                    },
+                    1700: {
+                        slidesPerView: 3,
+                        spaceBetween: 0,
+                        effect: "coverflow",
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: 250,
+                            slideShadows: false
+                        }
+                    },
+                    2300: {
+                        slidesPerView: 5,
+                        spaceBetween: 30,
+                        effect: "coverflow",
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: 100,
+                            slideShadows: false
+                        }
+                    }
+                },
+                on: {}
+            });
+        }
     }
     window.addEventListener("load", (function(e) {
         initSliders();
     }));
     let addWindowScrollEvent = false;
+    function headerScroll() {
+        addWindowScrollEvent = true;
+        const header = document.querySelector("header.header");
+        const headerShow = header.hasAttribute("data-scroll-show");
+        const headerShowTimer = header.dataset.scrollShow ? header.dataset.scrollShow : 500;
+        const startPoint = header.dataset.scroll ? header.dataset.scroll : 1;
+        let scrollDirection = 0;
+        let timer;
+        document.addEventListener("windowScroll", (function(e) {
+            const scrollTop = window.scrollY;
+            clearTimeout(timer);
+            if (scrollTop >= startPoint) {
+                !header.classList.contains("_header-scroll") ? header.classList.add("_header-scroll") : null;
+                if (headerShow) {
+                    if (scrollTop > scrollDirection) header.classList.contains("_header-show") ? header.classList.remove("_header-show") : null; else !header.classList.contains("_header-show") ? header.classList.add("_header-show") : null;
+                    timer = setTimeout((() => {
+                        !header.classList.contains("_header-show") ? header.classList.add("_header-show") : null;
+                    }), headerShowTimer);
+                }
+            } else {
+                header.classList.contains("_header-scroll") ? header.classList.remove("_header-scroll") : null;
+                if (headerShow) header.classList.contains("_header-show") ? header.classList.remove("_header-show") : null;
+            }
+            scrollDirection = scrollTop <= 0 ? 0 : scrollTop;
+        }));
+    }
     setTimeout((() => {
         if (addWindowScrollEvent) {
             let windowScroll = new Event("windowScroll");
@@ -4007,32 +4205,19 @@
         menuBurger.classList.toggle("_icon-active");
         if (menuBody) menuBody.classList.toggle("_body-active");
     }));
-    const buttonPlay = document.querySelector(".button-play-video");
-    const video = document.querySelector(".how-we-make__video");
-    if (buttonPlay) buttonPlay.addEventListener("click", (function(e) {
-        buttonPlay.classList.add("button-play-video-active");
-        if (video) {
-            video.hasAttribute("controls");
-            video.toggleAttribute("controls");
-        }
-        if (video) video.play();
-    }));
-    if (video) video.addEventListener("click", (function(e) {
-        buttonPlay.classList.toggle("button-play-video-active");
-        video.toggleAttribute("controls");
-        if (video) video.pause();
-    }));
-    function showNumber(num) {
-        console.log(num);
-        let timeId = setTimeout(showNumber, 1e3, ++num);
-        if (7 === num) clearInterval(timeId);
+    function onEntry(entry) {
+        entry.forEach((change => {
+            if (change.isIntersecting) change.target.classList.add("element-show");
+        }));
     }
-    setTimeout(showNumber, 1e3, 1);
-    function showMessage() {
-        if (true) console.log("чао какао");
-    }
-    showMessage();
+    let options = {
+        threshold: [ .5 ]
+    };
+    let observer = new IntersectionObserver(onEntry, options);
+    let script_elements = document.querySelectorAll(".element-animation");
+    for (let elm of script_elements) observer.observe(elm);
     window["FLS"] = true;
     isWebp();
     menuInit();
+    headerScroll();
 })();
