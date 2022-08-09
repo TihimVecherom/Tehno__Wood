@@ -3287,9 +3287,7 @@ button.swiper-pagination-bullet {
   .one-page,
   .two-page,
   .three-page {
-    min-height: -webkit-min-content;
-    min-height: -moz-min-content;
-    min-height: min-content;
+    min-height: 70vh;
   }
 
   .use-of-furniture__container {
