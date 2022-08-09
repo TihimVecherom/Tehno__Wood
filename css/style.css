@@ -2411,13 +2411,13 @@ input[type=checkbox]:checked + label > span {
 }
 
 ._body-active {
-  width: 100%;
-  left: 0%;
-  z-index: 99;
-  background-color: #1D1D1D;
-  -webkit-transition: 0.5s;
-  -o-transition: 0.5s;
-  transition: 0.5s;
+  width: 100% !important;
+  left: 0% !important;
+  z-index: 99 !important;
+  background-color: #1D1D1D !important;
+  -webkit-transition: 0.5s !important;
+  -o-transition: 0.5s !important;
+  transition: 0.5s !important;
 }
 
 .menu__link:hover {
@@ -3698,6 +3698,14 @@ button.swiper-pagination-bullet {
 }
 
 @media (max-width: 29.99875em) {
+  .one-page,
+  .two-page,
+  .three-page {
+    min-height: -webkit-max-content;
+    min-height: -moz-max-content;
+    min-height: max-content;
+  }
+
   .use-of-furniture__text {
     padding-left: 15px;
   }
