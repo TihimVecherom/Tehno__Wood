@@ -3287,7 +3287,7 @@ button.swiper-pagination-bullet {
   .one-page,
   .two-page,
   .three-page {
-    min-height: 70vh;
+    min-height: 70vh !important;
   }
 
   .use-of-furniture__container {
@@ -3701,9 +3701,9 @@ button.swiper-pagination-bullet {
   .one-page,
   .two-page,
   .three-page {
-    min-height: -webkit-max-content;
-    min-height: -moz-max-content;
-    min-height: max-content;
+    min-height: -webkit-max-content !important;
+    min-height: -moz-max-content !important;
+    min-height: max-content !important;
   }
 
   .use-of-furniture__text {
