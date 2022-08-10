@@ -3291,7 +3291,7 @@ button.swiper-pagination-bullet {
   }
 
   .use-of-furniture__container {
-    min-height: 50vh;
+    min-height: 50vh !important;
   }
 
   .work-principles__content {
@@ -3701,9 +3701,7 @@ button.swiper-pagination-bullet {
   .one-page,
   .two-page,
   .three-page {
-    min-height: -webkit-max-content !important;
-    min-height: -moz-max-content !important;
-    min-height: max-content !important;
+    min-height: 70vh !important;
   }
 
   .use-of-furniture__text {

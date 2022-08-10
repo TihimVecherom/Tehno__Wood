@@ -3983,7 +3983,7 @@
                 slidesPerView: 3,
                 spaceBetween: 20,
                 autoHeight: true,
-                speed: 1e3,
+                speed: 800,
                 loop: true,
                 effect: "coverflow",
                 coverflowEffect: {
